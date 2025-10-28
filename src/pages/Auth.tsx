@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types";
 import authHero from "@/assets/auth-hero.jpg";
 
 const Auth = () => {
@@ -12,10 +14,11 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
+  const [role, setRole] = useState<UserRole>("job_seeker");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login, signup } = useAuth();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,7 +29,6 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Validation
     if (!email || !password) {
       toast({
         title: "Error",
@@ -57,39 +59,48 @@ const Auth = () => {
       return;
     }
 
-    if (!isLogin) {
-      if (!name) {
-        toast({
-          title: "Error",
-          description: "Please enter your name",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        toast({
-          title: "Error",
-          description: "Passwords do not match",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Simulate API call
-    setTimeout(() => {
+    if (!isLogin && password !== confirmPassword) {
       toast({
-        title: isLogin ? "Login Successful" : "Account Created",
-        description: isLogin
-          ? "Welcome back!"
-          : "Your account has been created successfully",
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
       });
       setLoading(false);
-      navigate("/");
-    }, 1500);
+      return;
+    }
+
+    try {
+      if (isLogin) {
+        const success = await login(email, password);
+        if (success) {
+          toast({
+            title: "Login Successful",
+            description: "Welcome back!",
+          });
+          navigate("/dashboard");
+        } else {
+          toast({
+            title: "Error",
+            description: "Invalid email or password",
+            variant: "destructive",
+          });
+        }
+      } else {
+        await signup(email, password, role);
+        toast({
+          title: "Account Created",
+          description: "Your account has been created successfully",
+        });
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   return (
@@ -112,15 +123,29 @@ const Auth = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {!isLogin && (
                 <div className="space-y-2 animate-scale-in">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="transition-all focus:shadow-md"
-                  />
+                  <Label className="text-sm font-medium">I am a</Label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="job_seeker"
+                        checked={role === "job_seeker"}
+                        onChange={(e) => setRole(e.target.value as UserRole)}
+                        className="w-4 h-4 accent-primary"
+                      />
+                      <span className="text-sm">Job Seeker</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        value="recruiter"
+                        checked={role === "recruiter"}
+                        onChange={(e) => setRole(e.target.value as UserRole)}
+                        className="w-4 h-4 accent-primary"
+                      />
+                      <span className="text-sm">Recruiter</span>
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -179,7 +204,7 @@ const Auth = () => {
                   setEmail("");
                   setPassword("");
                   setConfirmPassword("");
-                  setName("");
+                  setRole("job_seeker");
                 }}
                 className="text-primary hover:text-accent transition-colors text-sm font-medium"
               >

@@ -1,64 +1,66 @@
+import { Link } from "react-router-dom";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { ArrowRight, Lock, Shield, Zap } from "lucide-react";
+import { Briefcase, Users, Zap, Target } from "lucide-react";
 
 const Index = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-8 animate-scale-in">
-            <Shield className="w-4 h-4" />
-            <span className="text-sm font-medium">Secure Authentication Platform</span>
+    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-primary/5">
+      <Navbar />
+      
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
+          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+            Find Your Perfect Match
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+            Connecting talented job seekers with top companies through smart matching
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+            <Link to="/auth">
+              <Button size="lg" className="text-lg px-8 py-6 animate-scale-in">
+                Get Started
+              </Button>
+            </Link>
+            <Link to="/jobs">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 animate-scale-in">
+                Browse Jobs
+              </Button>
+            </Link>
           </div>
 
-          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            Welcome to Your App
-          </h1>
-
-          <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Experience seamless authentication with our modern, secure, and beautiful login system
-          </p>
-
-          <Button
-            onClick={() => navigate("/auth")}
-            size="lg"
-            className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all hover:shadow-lg text-lg px-8 py-6 group"
-          >
-            Get Started
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-
-          <div className="mt-24 grid md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-card border border-border/50 hover:shadow-lg transition-all animate-fade-in">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Lock className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Secure</h3>
-              <p className="text-muted-foreground">
-                Industry-standard security with encrypted authentication
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 pt-16">
+            <div className="p-6 rounded-lg bg-card/50 backdrop-blur-sm border border-border hover-scale">
+              <Briefcase className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">Easy Apply</h3>
+              <p className="text-muted-foreground text-sm">
+                Apply with your profile or upload resume
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-card border border-border/50 hover:shadow-lg transition-all animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Fast</h3>
-              <p className="text-muted-foreground">
-                Lightning-fast authentication and seamless user experience
+            <div className="p-6 rounded-lg bg-card/50 backdrop-blur-sm border border-border hover-scale">
+              <Users className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">Top Companies</h3>
+              <p className="text-muted-foreground text-sm">
+                Connect with leading organizations
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-card border border-border/50 hover:shadow-lg transition-all animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Reliable</h3>
-              <p className="text-muted-foreground">
-                Built with modern technologies for maximum reliability
+            <div className="p-6 rounded-lg bg-card/50 backdrop-blur-sm border border-border hover-scale">
+              <Target className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">Smart Match</h3>
+              <p className="text-muted-foreground text-sm">
+                AI-powered candidate ranking
+              </p>
+            </div>
+
+            <div className="p-6 rounded-lg bg-card/50 backdrop-blur-sm border border-border hover-scale">
+              <Zap className="w-12 h-12 mx-auto mb-4 text-primary" />
+              <h3 className="text-xl font-semibold mb-2">Quick Process</h3>
+              <p className="text-muted-foreground text-sm">
+                Fast and efficient hiring
               </p>
             </div>
           </div>
