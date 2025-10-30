@@ -46,4 +46,25 @@ export const mockAuth = {
     const stored = localStorage.getItem(STORAGE_KEYS.USERS);
     return stored ? JSON.parse(stored) : [];
   },
+
+  resetPassword: (email: string, newPassword: string): boolean => {
+    const users = mockAuth.getAllUsers();
+    const userIndex = users.findIndex(u => u.email === email);
+    
+    if (userIndex === -1) {
+      return false;
+    }
+    
+    // In a real app, password would be hashed here
+    // For mock purposes, we'll just update the user record
+    users[userIndex] = { ...users[userIndex], email }; // Keep user data
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    
+    return true;
+  },
+
+  checkEmailExists: (email: string): boolean => {
+    const users = mockAuth.getAllUsers();
+    return users.some(u => u.email === email);
+  },
 };

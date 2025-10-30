@@ -7,6 +7,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, role: UserRole) => Promise<User>;
   logout: () => void;
+  resetPassword: (email: string, newPassword: string) => Promise<boolean>;
+  checkEmailExists: (email: string) => boolean;
   isLoading: boolean;
 }
 
@@ -42,8 +44,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
+  const resetPassword = async (email: string, newPassword: string): Promise<boolean> => {
+    return mockAuth.resetPassword(email, newPassword);
+  };
+
+  const checkEmailExists = (email: string): boolean => {
+    return mockAuth.checkEmailExists(email);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, resetPassword, checkEmailExists, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

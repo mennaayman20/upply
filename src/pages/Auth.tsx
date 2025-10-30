@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,9 +17,14 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("job_seeker");
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'verify' | 'reset'>('email');
+  const [resetEmail, setResetEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login, signup } = useAuth();
+  const { login, signup, resetPassword, checkEmailExists } = useAuth();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -101,6 +107,78 @@ const Auth = () => {
       });
     }
     setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (forgotPasswordStep === 'email') {
+      if (!resetEmail.trim() || !resetEmail.includes('@')) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid email address',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!checkEmailExists(resetEmail)) {
+        toast({
+          title: 'Error',
+          description: 'No account found with this email address',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Verification code sent! (Mock: automatically verified)',
+      });
+      setForgotPasswordStep('verify');
+      
+      // In a real app, this would send an email with a reset link/code
+      // For mock purposes, we auto-advance after a brief delay
+      setTimeout(() => {
+        setForgotPasswordStep('reset');
+      }, 1500);
+    } else if (forgotPasswordStep === 'reset') {
+      if (newPassword.length < 6) {
+        toast({
+          title: 'Error',
+          description: 'Password must be at least 6 characters',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (newPassword !== confirmNewPassword) {
+        toast({
+          title: 'Error',
+          description: 'Passwords do not match',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const success = await resetPassword(resetEmail, newPassword);
+      
+      if (success) {
+        toast({
+          title: 'Success',
+          description: 'Password reset successfully! Please log in with your new password.',
+        });
+        setShowForgotPassword(false);
+        setResetEmail('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setForgotPasswordStep('email');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to reset password. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    }
   };
 
   return (
@@ -194,6 +272,17 @@ const Auth = () => {
               >
                 {loading ? "Processing..." : isLogin ? "Sign In" : "Sign Up"}
               </Button>
+
+              {isLogin && (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full mt-2"
+                  onClick={() => setShowForgotPassword(true)}
+                >
+                  Forgot Password?
+                </Button>
+              )}
             </form>
 
             <div className="mt-6 text-center">
@@ -236,6 +325,73 @@ const Auth = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              {forgotPasswordStep === 'email' && 'Enter your email address to receive a password reset link'}
+              {forgotPasswordStep === 'verify' && 'Verifying your email...'}
+              {forgotPasswordStep === 'reset' && 'Enter your new password'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {forgotPasswordStep === 'email' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleForgotPassword} className="w-full">
+                  Send Reset Link
+                </Button>
+              </>
+            )}
+
+            {forgotPasswordStep === 'verify' && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Verifying your email address...</p>
+              </div>
+            )}
+
+            {forgotPasswordStep === 'reset' && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                  <Input
+                    id="confirm-new-password"
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleForgotPassword} className="w-full">
+                  Reset Password
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
