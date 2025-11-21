@@ -3,6 +3,9 @@ export type UserRole = 'job_seeker' | 'recruiter';
 export interface User {
   id: string;
   email: string;
+  //m
+  password?: string; 
+  
   role: UserRole;
   createdAt: string;
 }

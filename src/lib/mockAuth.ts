@@ -13,7 +13,7 @@ export const mockAuth = {
 
   login: (email: string, password: string): User | null => {
     const users = mockAuth.getAllUsers();
-    const user = users.find(u => u.email === email);
+    const user = users.find(u => u.email === email && u.password === password);
     
     if (user) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
@@ -24,9 +24,16 @@ export const mockAuth = {
 
   signup: (email: string, password: string, role: UserRole): User => {
     const users = mockAuth.getAllUsers();
+    
+    // Prevent duplicate email signup
+    if (users.some(u => u.email === email)) {
+      throw new Error('Email already exists');
+    }
+
     const newUser: User = {
       id: `user_${Date.now()}`,
       email,
+      password, // 👈 Added password
       role,
       createdAt: new Date().toISOString(),
     };
@@ -51,13 +58,9 @@ export const mockAuth = {
     const users = mockAuth.getAllUsers();
     const userIndex = users.findIndex(u => u.email === email);
     
-    if (userIndex === -1) {
-      return false;
-    }
+    if (userIndex === -1) return false;
     
-    // In a real app, password would be hashed here
-    // For mock purposes, we'll just update the user record
-    users[userIndex] = { ...users[userIndex], email }; // Keep user data
+    users[userIndex].password = newPassword; // 👈 Update stored password
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
     
     return true;

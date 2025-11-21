@@ -1,73 +1,80 @@
-# Welcome to your Lovable project
+# Job Recruitment Platform
 
-## Project info
+A modern web application built with React, TypeScript, and Vite for connecting job seekers with recruiters. Features include user authentication, job posting, application management, and profile management.
 
-**URL**: https://lovable.dev/projects/93fe9de9-e133-4a44-a2d8-0a0722b1c801
+## Features
 
-## How can I edit this code?
+- User authentication (login/signup)
+- Job posting and browsing
+- Application tracking for recruiters
+- User profiles for seekers and recruiters
+- Responsive design with Tailwind CSS
+- Modern UI components with ShadCN UI
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI (via ShadCN)
+- **Routing**: React Router DOM
+- **State Management**: React Query
+- **Form Handling**: React Hook Form with Zod validation
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/93fe9de9-e133-4a44-a2d8-0a0722b1c801) and start prompting.
+## Installation
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd upply
+   ```
 
-**Use your preferred IDE**
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Scripts
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+The following scripts are available in the project:
 
-Follow these steps:
+- **`npm run dev`** - Starts the development server with hot reloading
+- **`npm run build`** - Builds the application for production
+- **`npm run build:dev`** - Builds the application in development mode
+- **`npm run lint`** - Runs ESLint to check for code quality issues
+- **`npm run preview`** - Previews the production build locally
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Usage
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+To start the development server:
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:5173`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/     # Reusable UI components
+├── pages/          # Page components
+├── contexts/       # React contexts (e.g., AuthContext)
+├── hooks/          # Custom React hooks
+├── lib/            # Utility functions and mock data
+├── types/          # TypeScript type definitions
+└── assets/         # Static assets
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Contributing
 
-## What technologies are used for this project?
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
 
-This project is built with:
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/93fe9de9-e133-4a44-a2d8-0a0722b1c801) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the MIT License.
