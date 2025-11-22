@@ -4,6 +4,9 @@ const STORAGE_KEYS = {
   CURRENT_USER: 'upply_current_user',
   USERS: 'upply_users',
   PENDING_VERIFICATION: 'upply_pending_verification',
+
+   // ➕ Added for Reset Password
+  RESET_VERIFICATION: 'upply_reset_verification',
 };
 
 export const mockAuth = {
@@ -88,6 +91,45 @@ export const mockAuth = {
     const stored = localStorage.getItem(STORAGE_KEYS.USERS);
     return stored ? JSON.parse(stored) : [];
   },
+
+
+  
+  // Step 1 → send OTP
+  sendResetOTP: (email: string): string | null => {
+    const users = mockAuth.getAllUsers();
+    const user = users.find(u => u.email === email);
+
+    if (!user) return null;
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const resetData = {
+      email,
+      otp,
+      timestamp: Date.now(),
+    };
+
+    localStorage.setItem(STORAGE_KEYS.RESET_VERIFICATION, JSON.stringify(resetData));
+
+    return otp;
+  },
+
+  // Step 2 → verify OTP
+  verifyResetOTP: (otp: string): boolean => {
+    const stored = localStorage.getItem(STORAGE_KEYS.RESET_VERIFICATION);
+    if (!stored) return false;
+
+    const resetData = JSON.parse(stored);
+
+    const valid =
+      resetData.otp === otp &&
+      Date.now() - resetData.timestamp < 600000; // 10 minutes
+
+    return valid;
+  },
+
+
+
 
   resetPassword: (email: string, newPassword: string): boolean => {
     const users = mockAuth.getAllUsers();

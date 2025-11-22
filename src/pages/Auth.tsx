@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState , useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,8 +18,19 @@ const Auth = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<UserRole>("job_seeker");
   const [loading, setLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+
+
+  // 🔹 Forgot Password Steps
+ const [showForgotPassword, setShowForgotPassword] = useState(false);
+
   const [showOTPVerification, setShowOTPVerification] = useState(false);
+
+  // forgot-password steps: 1=email, 2=otp, 3=new-password
+  const [forgotStep, setForgotStep] = useState<1 | 2 | 3>(1);
+  
+
+
   const [otp, setOtp] = useState("");
   const [generatedOTP, setGeneratedOTP] = useState("");
   const [resetEmail, setResetEmail] = useState('');
@@ -28,7 +38,7 @@ const Auth = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { login, signup, resetPassword, checkEmailExists, verifyOTP, resendOTP } = useAuth();
+  const { login, signup, resetPassword, checkEmailExists, verifyOTP, resendOTP, sendResetOTP, verifyResetOTP } = useAuth();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -103,6 +113,7 @@ const Auth = () => {
           title: "Verification Code Sent",
           description: `Your verification code is: ${result.otp}`,
         });
+
       }
     } catch (error) {
       toast({
@@ -113,6 +124,13 @@ const Auth = () => {
     }
     setLoading(false);
   };
+
+
+
+
+
+
+
 
   const handleVerifyOTP = async () => {
     if (otp.length !== 6) {
@@ -215,6 +233,91 @@ const Auth = () => {
         description: 'Failed to reset password. Please try again.',
         variant: 'destructive',
       });
+    }
+  };
+
+  // --- New handlers for multi-step reset ---
+  const handleSendResetOTP = async () => {
+    if (!validateEmail(resetEmail)) {
+      toast({ title: 'Error', description: 'Enter a valid email', variant: 'destructive' });
+      return;
+    }
+
+    if (!checkEmailExists(resetEmail)) {
+      toast({ title: 'Error', description: 'No account found with this email', variant: 'destructive' });
+      return;
+    }
+
+    setLoading(true);
+    const otpSent = await sendResetOTP(resetEmail);
+    setLoading(false);
+
+    if (otpSent) {
+      setGeneratedOTP(otpSent);
+      toast({ title: 'OTP Sent', description: `Demo OTP: ${otpSent}` });
+      setForgotStep(2);
+    } else {
+      toast({ title: 'Error', description: 'Failed to send OTP', variant: 'destructive' });
+    }
+  };
+
+  const handleVerifyResetOTP = async () => {
+    if (otp.length !== 6) {
+      toast({ title: 'Error', description: 'Please enter a valid 6-digit code', variant: 'destructive' });
+      return;
+    }
+
+    setLoading(true);
+    const ok = await verifyResetOTP(otp);
+    setLoading(false);
+
+    if (ok) {
+      toast({ title: 'Verified', description: 'OTP verified. Enter your new password.' });
+      setForgotStep(3);
+    } else {
+      toast({ title: 'Error', description: 'Invalid or expired code', variant: 'destructive' });
+    }
+  };
+
+  const handleSubmitNewPassword = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: 'Error', description: 'Password must be at least 6 characters', variant: 'destructive' });
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast({ title: 'Error', description: 'Passwords do not match', variant: 'destructive' });
+      return;
+    }
+
+    setLoading(true);
+    const success = await resetPassword(resetEmail, newPassword);
+    setLoading(false);
+
+    if (success) {
+      toast({ title: 'Success', description: 'Password reset successfully. Please sign in.' });
+      setShowForgotPassword(false);
+      setForgotStep(1);
+      setResetEmail('');
+      setOtp('');
+      setGeneratedOTP('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } else {
+      toast({ title: 'Error', description: 'Failed to reset password', variant: 'destructive' });
+    }
+  };
+
+  const handleResendResetOTP = async () => {
+    setLoading(true);
+    const otpSent = await sendResetOTP(resetEmail);
+    setLoading(false);
+
+    if (otpSent) {
+      setGeneratedOTP(otpSent);
+      toast({ title: 'Code Resent', description: `Demo OTP: ${otpSent}` });
+    } else {
+      toast({ title: 'Error', description: 'Failed to resend code', variant: 'destructive' });
     }
   };
 
@@ -464,49 +567,96 @@ const Auth = () => {
         </div>
       </div>
 
-      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+      <Dialog open={showForgotPassword} onOpenChange={(open) => {
+        setShowForgotPassword(open);
+        if (!open) {
+          setForgotStep(1);
+          setResetEmail('');
+          setOtp('');
+          setGeneratedOTP('');
+          setNewPassword('');
+          setConfirmNewPassword('');
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reset Password</DialogTitle>
             <DialogDescription>
-              Enter your email and new password to reset your account
+              {forgotStep === 1 && 'Enter your email to receive a verification code'}
+              {forgotStep === 2 && 'Enter the 6-digit code we sent to your email'}
+              {forgotStep === 3 && 'Set your new password'}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="reset-email">Email</Label>
-              <Input
-                id="reset-email"
-                type="email"
-                placeholder="your@email.com"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-new-password">Confirm New Password</Label>
-              <Input
-                id="confirm-new-password"
-                type="password"
-                placeholder="Confirm new password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleForgotPassword} className="w-full">
-              Reset Password
-            </Button>
+            {forgotStep === 1 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                </div>
+                <Button onClick={handleSendResetOTP} className="w-full" disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Code'}
+                </Button>
+              </>
+            )}
+
+            {forgotStep === 2 && (
+              <>
+                <div className="flex flex-col items-center space-y-4">
+                  <Label>Verification Code</Label>
+                  <InputOTP
+                    maxLength={6}
+                    value={otp}
+                    onChange={(value) => setOtp(value)}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                  <p className="text-xs text-muted-foreground">Demo code: {generatedOTP}</p>
+                </div>
+
+                <Button onClick={handleVerifyResetOTP} className="w-full" disabled={loading || otp.length !== 6}>
+                  {loading ? 'Verifying...' : 'Verify Code'}
+                </Button>
+
+                <div className="flex items-center justify-between">
+                  <button type="button" onClick={() => setForgotStep(1)} className="text-sm text-muted-foreground">Back</button>
+                  <div>
+                    <button type="button" onClick={handleResendResetOTP} className="text-primary hover:text-accent text-sm font-medium">Resend Code</button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {forgotStep === 3 && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input id="new-password" type="password" placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-new-password">Confirm New Password</Label>
+                  <Input id="confirm-new-password" type="password" placeholder="Confirm new password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+                </div>
+                <Button onClick={handleSubmitNewPassword} className="w-full" disabled={loading}>{loading ? 'Saving...' : 'Set New Password'}</Button>
+                <div className="text-center mt-2">
+                  <button type="button" onClick={() => setForgotStep(2)} className="text-sm text-muted-foreground">Back</button>
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -515,6 +665,25 @@ const Auth = () => {
 };
 
 export default Auth;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

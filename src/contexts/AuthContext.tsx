@@ -11,6 +11,11 @@ interface AuthContextType {
   logout: () => void;
   resetPassword: (email: string, newPassword: string) => Promise<boolean>;
   checkEmailExists: (email: string) => boolean;
+
+    // ➕ Added
+  sendResetOTP: (email: string) => Promise<string | null>;
+  verifyResetOTP: (otp: string) => Promise<boolean>;
+
   isLoading: boolean;
 }
 
@@ -65,8 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return mockAuth.checkEmailExists(email);
   };
 
+    // ➕ New Function: send OTP to reset password
+  const sendResetOTP = async (email: string): Promise<string | null> => {
+    return mockAuth.sendResetOTP(email);
+  };
+
+  // ➕ New Function: verify reset password OTP
+  const verifyResetOTP = async (otp: string): Promise<boolean> => {
+    return mockAuth.verifyResetOTP(otp);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, resetPassword, checkEmailExists, verifyOTP, resendOTP, isLoading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, resetPassword, checkEmailExists, verifyOTP, resendOTP, sendResetOTP , verifyResetOTP , isLoading }}>
       {children}
     </AuthContext.Provider>
   );
